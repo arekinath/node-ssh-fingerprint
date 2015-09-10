@@ -1,7 +1,7 @@
 ssh-fingerprint
 ===============
 
-Generate a fingerprint given an SSH public key (without `ssh-keygen` or external dependencies)
+Generate or verify a fingerprint given an SSH public key (without `ssh-keygen` or external dependencies)
 
 Install
 -------
@@ -61,6 +61,37 @@ Parameters
 Returns
 
 - The stringified fingerprint, as above
+
+### `fingerprint.verify(pubkey, fingerprint[, algorithms]);`
+
+Verifies whether a given fingerprint matches a particular public key. The comparison is double-hashed, to avoid leaking timing information.
+
+Parameters
+
+- `pubkey`: A public key string, as for `fingerprint.calculate`
+- `fingerprint`: A stringified fingerprint, in either the old `hex` format or the new `base64` style
+- `algorithms`: Optional Array of algorithms to limit comparisons to (e.g. `['sha256','sha384']`). If the algorithm detected for the given `fingerprint` is not in this list, an `AlgorithmNotEnabled` error is thrown.
+
+Returns
+
+- `true` if the given fingerprint matches the given public key, `false` otherwise
+
+### `fingerprint.FormatNotSupported`
+
+Error subclass thrown by `fingerprint.verify()` when the supplied fingerprint is not in a recognised format.
+
+Properties:
+
+- `fingerprint`: The fingerprint string that failed to parse
+
+### `fingerprint.AlgorithmNotEnabled`
+
+Error subclass thrown by `fingerprint.verify()` when the supplied fingerprint is valid, but uses an algorithm that is not in the given list of enabled algorithms.
+
+Properties:
+
+- `algorithm`: The algorithm used by the fingerprint
+- `enabled`: The array of enabled algorithms
 
 License
 -------

@@ -36,3 +36,11 @@ assert.throws(function () {
 
 var sha1HexFingerprint = fingerprint.calculate(PUBLIC_KEY, {algorithm: 'sha1', style: 'hex'});
 assert.strictEqual(sha1HexFingerprint, known_sha1HexFingerprint);
+
+assert(fingerprint.verify(PUBLIC_KEY, known_md5fingerprint));
+assert(fingerprint.verify(PUBLIC_KEY, known_sha256fingerprint));
+assert.throws(function () {
+  fingerprint.verify(PUBLIC_KEY, known_sha256fingerprint, ['md5', 'sha1']);
+}, fingerprint.AlgorithmNotEnabled);
+assert(fingerprint.verify(PUBLIC_KEY, known_sha256fingerprint, ['sha256']));
+assert(!(fingerprint.verify(PUBLIC_KEY, 'SHA1:foo')));
