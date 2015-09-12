@@ -9,5 +9,7 @@
   },
   "repository": "git://github.com/bahamas10/node-ssh-fingerprint.git",
   "license": "MIT",
-  "dependencies": {}
+  "dependencies": {
+    "assert-plus": "0.1.5"
+  }
 }

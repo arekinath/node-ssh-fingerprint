@@ -1,5 +1,5 @@
 var crypto = require('crypto');
-var assert = require('assert');
+var assert = require('assert-plus');
 
 var pubre = /^(ssh-[dr]s[as]\s+)|(\s+.+)|\n/g;
 
@@ -47,6 +47,8 @@ function calculate(pub, opts) {
       style = 'hex';
     else
       style = 'base64';
+  assert.string(alg, 'algorithm');
+  assert.string(style, 'style');
 
   var cleanpub = pub.replace(pubre, '');
   var pubbuffer = new Buffer(cleanpub, 'base64');
@@ -57,7 +59,9 @@ function calculate(pub, opts) {
 
 function verify(pub, fp, algs) {
   var alg, hash;
-  assert(typeof (fp) === 'string');
+  assert.string(pub, 'pubkey');
+  assert.string(fp, 'fingerprint');
+  assert.optionalArrayOfString(algs, 'algorithms');
 
   var parts = fp.split(':');
   if (parts.length == 2) {
