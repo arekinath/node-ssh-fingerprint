@@ -13,6 +13,8 @@ fingerprint.AlgorithmNotEnabled = AlgorithmNotEnabled;
 fingerprint.InvalidAlgorithm = InvalidAlgorithm;
 
 function FormatNotSupported(fp) {
+  if (Error.captureStackTrace)
+    Error.captureStackTrace(this, FormatNotSupported);
   this.name = 'FormatNotSupported';
   this.fingerprint = fp;
   this.message = 'Fingerprint format is not supported, or is invalid';
@@ -20,6 +22,8 @@ function FormatNotSupported(fp) {
 FormatNotSupported.prototype = Error.prototype;
 
 function AlgorithmNotEnabled(alg, avalgs) {
+  if (Error.captureStackTrace)
+    Error.captureStackTrace(this, AlgorithmNotEnabled);
   this.name = 'AlgorithmNotEnabled';
   this.algorithm = alg
   this.enabled = avalgs;
@@ -29,6 +33,8 @@ function AlgorithmNotEnabled(alg, avalgs) {
 AlgorithmNotEnabled.prototype = Error.prototype;
 
 function InvalidAlgorithm(alg) {
+  if (Error.captureStackTrace)
+    Error.captureStackTrace(this, InvalidAlgorithm);
   this.name = 'InvalidAlgorithm';
   this.algorithm = alg
   this.message = 'Fingerprint supplied uses an algorithm (' + alg + ') ' +
