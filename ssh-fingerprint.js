@@ -7,8 +7,10 @@ var pubre = /^(ssh-[dr]s[as]\s+)|(\s+.+)|\n/g;
 module.exports = fingerprint;
 fingerprint.calculate = calculate;
 fingerprint.verify = verify;
+fingerprint.verifier = verifier;
 fingerprint.FormatNotSupported = FormatNotSupported;
 fingerprint.AlgorithmNotEnabled = AlgorithmNotEnabled;
+fingerprint.InvalidAlgorithm = InvalidAlgorithm;
 
 function FormatNotSupported(fp) {
   this.name = 'FormatNotSupported';
@@ -26,6 +28,22 @@ function AlgorithmNotEnabled(alg, avalgs) {
 }
 AlgorithmNotEnabled.prototype = Error.prototype;
 
+function InvalidAlgorithm(alg) {
+  this.name = 'InvalidAlgorithm';
+  this.algorithm = alg
+  this.message = 'Fingerprint supplied uses an algorithm (' + alg + ') ' +
+    'that is invalid or not supported for use with SSH keys';
+}
+InvalidAlgorithm.prototype = Error.prototype;
+
+var opensshHashAlgos = {
+  'md5': true,
+  'sha1': true,
+  'sha256': true,
+  'sha384': true,
+  'sha512': true
+};
+
 function fingerprint(pub, alg) {
   if (typeof (alg) !== 'string')
     throw (new TypeError('Expected string as second argument, ' +
@@ -34,6 +52,7 @@ function fingerprint(pub, alg) {
 }
 
 function calculate(pub, opts) {
+  assert.string(pub, 'publickey');
   if (typeof(opts) !== 'object')
     throw (new TypeError('Expected object as second argument, ' +
       'got a ' + typeof (opts) + ' instead'));
@@ -50,6 +69,9 @@ function calculate(pub, opts) {
   assert.string(alg, 'algorithm');
   assert.string(style, 'style');
 
+  if (opensshHashAlgos[alg.toLowerCase()] !== true)
+    throw (new InvalidAlgorithm(alg));
+
   var cleanpub = pub.replace(pubre, '');
   var pubbuffer = new Buffer(cleanpub, 'base64');
   var key = hash(pubbuffer, alg, style);
@@ -57,9 +79,8 @@ function calculate(pub, opts) {
   return key;
 }
 
-function verify(pub, fp, algs) {
+function verifier(fp, algs) {
   var alg, hash;
-  assert.string(pub, 'pubkey');
   assert.string(fp, 'fingerprint');
   assert.optionalArrayOfString(algs, 'algorithms');
 
@@ -86,15 +107,30 @@ function verify(pub, fp, algs) {
       throw (new AlgorithmNotEnabled(alg, algs));
   }
 
-  var cleanpub = pub.replace(pubre, '');
-  var pubbuffer = new Buffer(cleanpub, 'base64');
-  var pubhash = crypto.createHash(alg).update(pubbuffer).digest();
+  if (opensshHashAlgos[alg.toLowerCase()] !== true)
+    throw (new InvalidAlgorithm(alg));
 
-  /* Double-hash to avoid leaking any timing information */
   var hash2 = crypto.createHash(alg).update(hash).digest('base64');
-  var pubhash2 = crypto.createHash(alg).update(pubhash).digest('base64');
 
-  return (hash2 === pubhash2);
+  function verif(pub) {
+    assert.string(pub, 'pubkey');
+
+    var cleanpub = pub.replace(pubre, '');
+    var pubbuffer = new Buffer(cleanpub, 'base64');
+    var pubhash = crypto.createHash(alg).update(pubbuffer).digest();
+
+    /* Double-hash to avoid leaking any timing information */
+    var pubhash2 = crypto.createHash(alg).update(pubhash).digest('base64');
+
+    return (hash2 === pubhash2);
+  }
+
+  return (verif);
+}
+
+function verify(pub, fp, algs) {
+  var verif = verifier(fp, algs);
+  return (verif(pub));
 }
 
 // hash a string with the given alg

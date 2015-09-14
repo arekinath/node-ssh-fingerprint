@@ -76,6 +76,18 @@ Returns
 
 - `true` if the given fingerprint matches the given public key, `false` otherwise
 
+### `fingerprint.verifier(fingerprint[, algorithms]);`
+
+Returns a `verify` function specialised to verifying any given public key against the given fingerprint. This can be used to pre-parse and validate a fingerprint before using the returned function to iterate over available keys to find it.
+
+Parameters:
+
+- `fingerprint`, `algorithms`: as for `fingerprint.verify()` above
+
+Returns
+
+- `func (pubkey)`: a partially evaluated `verify` function
+
 ### `fingerprint.FormatNotSupported`
 
 Error subclass thrown by `fingerprint.verify()` when the supplied fingerprint is not in a recognised format.
@@ -92,6 +104,14 @@ Properties:
 
 - `algorithm`: The algorithm used by the fingerprint
 - `enabled`: The array of enabled algorithms
+
+### `fingerprint.InvalidAlgorithm`
+
+Error subclass thrown by `fingerprint.verify()` when the supplied fingerprint appears valid, but uses an algorithm that is not supported. The supported algorithm set is kept up to date with OpenSSH, so generally this means that malformed input was provided.
+
+Properties:
+
+- `algorithm`: The algorithm apparently used by the fingerprint
 
 License
 -------

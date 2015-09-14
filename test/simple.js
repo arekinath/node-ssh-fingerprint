@@ -44,3 +44,9 @@ assert.throws(function () {
 }, fingerprint.AlgorithmNotEnabled);
 assert(fingerprint.verify(PUBLIC_KEY, known_sha256fingerprint, ['sha256']));
 assert(!(fingerprint.verify(PUBLIC_KEY, 'SHA1:foo')));
+
+var v = fingerprint.verifier(known_sha256fingerprint);
+assert.throws(function () {
+  var v2 = fingerprint.verifier('ALG:something');
+});
+assert.strictEqual(v(PUBLIC_KEY), true);
