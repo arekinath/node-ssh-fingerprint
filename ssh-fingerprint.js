@@ -17,7 +17,8 @@ function FormatNotSupported(fp) {
     Error.captureStackTrace(this, FormatNotSupported);
   this.name = 'FormatNotSupported';
   this.fingerprint = fp;
-  this.message = 'Fingerprint format is not supported, or is invalid';
+  this.message = 'Fingerprint format is not supported, or is invalid' +
+    ' (fingerprint = "' + fp + '")';
 }
 FormatNotSupported.prototype = Error.prototype;
 
@@ -28,17 +29,25 @@ function AlgorithmNotEnabled(alg, avalgs) {
   this.algorithm = alg
   this.enabled = avalgs;
   this.message = 'Fingerprint supplied uses an algorithm (' + alg + ') ' +
-    'that was not listed in the enabled algorithms';
+    'that was not listed in the enabled algorithms (' +
+    avalgs.join(', ') + ')';
 }
 AlgorithmNotEnabled.prototype = Error.prototype;
 
-function InvalidAlgorithm(alg) {
+function InvalidAlgorithm(alg, fp) {
   if (Error.captureStackTrace)
     Error.captureStackTrace(this, InvalidAlgorithm);
   this.name = 'InvalidAlgorithm';
-  this.algorithm = alg
-  this.message = 'Fingerprint supplied uses an algorithm (' + alg + ') ' +
-    'that is invalid or not supported for use with SSH keys';
+  this.algorithm = alg;
+  if (fp) {
+    this.fingerprint = fp;
+    this.message = 'Fingerprint supplied uses an algorithm (' + alg + ') ' +
+      'that is invalid or not supported for use with SSH keys' +
+      ' (fingerprint = "' + fp + '")';
+  } else {
+    this.message = 'Requested SSH fingerprint algorithm (' + alg + ') ' +
+      'is invalid or is not supported for use with SSH keys';
+  }
 }
 InvalidAlgorithm.prototype = Error.prototype;
 
@@ -114,7 +123,7 @@ function verifier(fp, algs) {
   }
 
   if (opensshHashAlgos[alg.toLowerCase()] !== true)
-    throw (new InvalidAlgorithm(alg));
+    throw (new InvalidAlgorithm(alg, fp));
 
   var hash2 = crypto.createHash(alg).update(hash).digest('base64');
 
