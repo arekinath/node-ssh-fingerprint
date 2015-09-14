@@ -1,5 +1,6 @@
 var crypto = require('crypto');
 var assert = require('assert-plus');
+var util = require('util');
 
 var pubre = /^(ssh-[dr]s[as]\s+)|(\s+.+)|\n/g;
 
@@ -20,7 +21,7 @@ function FormatNotSupported(fp) {
   this.message = 'Fingerprint format is not supported, or is invalid' +
     ' (fingerprint = "' + fp + '")';
 }
-FormatNotSupported.prototype = Error.prototype;
+util.inherits(FormatNotSupported, Error);
 
 function AlgorithmNotEnabled(alg, avalgs) {
   if (Error.captureStackTrace)
@@ -32,7 +33,7 @@ function AlgorithmNotEnabled(alg, avalgs) {
     'that was not listed in the enabled algorithms (' +
     avalgs.join(', ') + ')';
 }
-AlgorithmNotEnabled.prototype = Error.prototype;
+util.inherits(AlgorithmNotEnabled, Error);
 
 function InvalidAlgorithm(alg, fp) {
   if (Error.captureStackTrace)
@@ -49,7 +50,7 @@ function InvalidAlgorithm(alg, fp) {
       'is invalid or is not supported for use with SSH keys';
   }
 }
-InvalidAlgorithm.prototype = Error.prototype;
+util.inherits(InvalidAlgorithm, Error);
 
 var opensshHashAlgos = {
   'md5': true,
